@@ -19,7 +19,7 @@
 - **Geometry Analysis**: Pose estimation, jawline angle, proportions
 - **Meme Classifier**: Rule-based (можно заменить на ML)
 
-### Frontend (React) todo
+### Frontend (React) works with api running
 - Загрузка изображений
 - Визуализация осей (Radar chart)
 - Отображение результатов и причин
