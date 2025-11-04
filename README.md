@@ -1,62 +1,68 @@
-# 🎯 FaceSharp (рабочее название)
+# 🎯 FaceSharp (working title)
 
-Сервис, который оценивает техническую чёткость и визуальные оси лица (свет, поза, линия челюсти), а сверху выдаёт мем-класс: "mogged / sigma / meh". Подходит для селфи-проверки перед загрузкой, фильтрации брак-кадров и фанової аналитики.
+A service that evaluates technical sharpness and visual axes of faces (light, pose, jawline), and outputs a meme class: "god / mogged / sigma / average / meh / trash". Perfect for selfie quality checks before upload, filtering bad frames, and fun analytics.
 
-## Что делает
+**[🇷🇺 Read in Russian](README.ru.md)**
 
-- **Измеряет качество**: резкость (Laplacian/Tenengrad/FFT), локальный контраст, экспозицию, шум, бэкграунд-боке
-- **Понимает лицо**: landmarks → пропорции (скулы/челюсть/глаза), угол челюсти, yaw/pitch/roll, окклюзии (очки/маска/рука)
-- **Даёт оси (0–100)**: sharpness, lighting, pose, jawline, contrast
-- **Мем-лейбл**: rule-based или ML-классификатор по осям + эмбеддингу (CLIP/ArcFace): mogged / sigma / meh
-- **Поясняет результат**: топ-факторы, снижающие/повышающие скор, и мини-heatmap резкости
-- **Работает on-device или через API**: приватность и низкая задержка
+---
 
-## Архитектура
+## What it does
 
-### Backend (Python/FastAPI) works
+- **Measures quality**: sharpness (Laplacian/Tenengrad/FFT), local contrast, exposure, noise, background bokeh
+- **Understands face**: landmarks → proportions (cheekbones/jaw/eyes), jaw angle, yaw/pitch/roll, occlusions (glasses/mask/hand)
+- **Provides axes (0–100)**: sharpness, lighting, pose, jawline, contrast
+- **Meme label**: rule-based or ML classifier based on axes + embedding (CLIP/ArcFace): god / mogged / sigma / average / meh / trash
+- **Explains results**: top factors lowering/raising score, and mini sharpness heatmap
+- **Works on-device or via API**: privacy and low latency
+
+## Architecture
+
+### Backend (Python/FastAPI) ✅
 - **Face Detection**: MediaPipe Face Detection + Face Mesh
 - **Quality Metrics**: Laplacian, Tenengrad, FFT, RMS Contrast, Exposure
 - **Geometry Analysis**: Pose estimation, jawline angle, proportions
-- **Meme Classifier**: Rule-based (можно заменить на ML)
+- **Meme Classifier**: Rule-based (can be replaced with ML)
 
-### Frontend (React) works with api running
-- Загрузка изображений
-- Визуализация осей (Radar chart)
-- Отображение результатов и причин
+### Frontend (React) ✅
+- Image upload
+- Axes visualization (Radar chart)
+- Results and reasons display
+- Tags and quality score
 
-### iOS App (SwiftUI) todo
-- Выбор фото из галереи или камера
-- Интеграция с API
-- Красивый UI с результатами
+### iOS App (SwiftUI) 📱
+- Photo selection from gallery or camera
+- API integration
+- Beautiful UI with results
 
-## Установка
+## Installation
 
-### Требования
+### Requirements
 
-- Python 3.12 (рекомендуется) или Python 3.10+
+- Python 3.12 (recommended) or Python 3.10+
 - pip 24.0+
+- Node.js 18+ (for frontend)
 
 ### Backend
 
 ```bash
-# Создать виртуальное окружение с Python 3.12
+# Create virtual environment with Python 3.12
 python3.12 -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 
-# Обновить pip
+# Upgrade pip
 pip install --upgrade pip
 
-# Установить зависимости
+# Install dependencies
 pip install -r requirements.txt
 
-# Запустить API
+# Run API
 cd api
 python main.py
 ```
 
-**Примечание**: Проект оптимизирован для Python 3.12. См. `PYTHON312_NOTES.md` для деталей о совместимости.
+**Note**: Project is optimized for Python 3.12. See `PYTHON312_NOTES.md` for compatibility details.
 
-API будет доступен на `http://localhost:8000`
+API will be available at `http://localhost:8000`
 
 ### Frontend
 
@@ -66,23 +72,23 @@ npm install
 npm run dev
 ```
 
-**Важно**: Запускайте dev сервер из папки `frontend/`, а не из корня проекта!
+**Important**: Run the dev server from the `frontend/` folder, not from the project root!
 
-Frontend будет доступен на `http://localhost:3000`
+Frontend will be available at `http://localhost:3000`
 
 ### iOS App
 
-1. Откройте `ios/FaceSharp.xcodeproj` в Xcode
-2. Установите правильный API URL в `FaceAnalysisViewModel.swift` (измените `apiURL`)
-3. Для тестирования на симуляторе используйте локальный IP вашего компьютера вместо `localhost`
-4. Соберите и запустите проект
+1. Open `ios/FaceSharp.xcodeproj` in Xcode
+2. Set the correct API URL in `FaceAnalysisViewModel.swift` (change `apiURL`)
+3. For simulator testing, use your computer's local IP instead of `localhost`
+4. Build and run the project
 
 ## API Endpoints
 
 ### POST `/analyze`
-Анализирует одно изображение.
+Analyzes a single image.
 
-**Request**: multipart/form-data с полем `file`
+**Request**: multipart/form-data with `file` field
 
 **Response**:
 ```json
@@ -98,28 +104,30 @@ Frontend будет доступен на `http://localhost:3000`
   "label": "sigma",
   "confidence": 0.81,
   "reasons": [
-    "хорошая резкость по глазам",
-    "умеренный поворот головы (yaw≈12°)",
-    "недоэкспозиция по фону (−8)"
+    "very high sharpness",
+    "good lighting",
+    "good angle/pose"
   ],
+  "tags": ["blurry", "dark"],
+  "quality": 75.5,
   "abstain": false,
   "model_version": "1.0.0"
 }
 ```
 
 ### POST `/analyze/batch`
-Анализирует несколько изображений.
+Analyzes multiple images in batch.
 
-## Как это работает (пайплайн)
+## How it works (pipeline)
 
-1. **Детекция + выравнивание лица** (RetinaFace/Mediapipe, 5-точек → similarity transform)
-2. **Качество**: Laplacian/Tenengrad, FFT high-freq ratio, RMS-контраст, экспозиция, локальные карты резкости
-3. **Геометрия**: 468-точек (FaceMesh) → дистанции/отношения, угол челюсти, поза, окклюзии
-4. **Эмбеддинг** (опционально): CLIP или ArcFace
-5. **Скоринг**: оси 0–100 + калибровка уверенности; правило или ML-классификатор выдаёт mogged/sigma/meh
-6. **Эксплейн**: причины и советы (например, "добавь света слева", "смотри в камеру")
+1. **Face detection + alignment** (RetinaFace/Mediapipe, 5-point → similarity transform)
+2. **Quality**: Laplacian/Tenengrad, FFT high-freq ratio, RMS contrast, exposure, local sharpness maps
+3. **Geometry**: 468-points (FaceMesh) → distances/ratios, jaw angle, pose, occlusions
+4. **Embedding** (optional): CLIP or ArcFace
+5. **Scoring**: axes 0–100 + confidence calibration; rule or ML classifier outputs god/mogged/sigma/average/meh/trash
+6. **Explain**: reasons and tips (e.g., "add light from left", "look at camera")
 
-## Структура проекта
+## Project Structure
 
 ```
 FaceSharp/
@@ -139,34 +147,33 @@ FaceSharp/
 └── requirements.txt
 ```
 
-## Технологии
+## Technologies
 
 - **CV/ML**: OpenCV, Mediapipe (Face Detection/Mesh), PyTorch, open-clip
-- **Классификатор**: Logistic Regression / Linear SVM по concat(эмбеддинг, резкость, геометрия), калибровка вероятностей
-- **API**: FastAPI/ONNX Runtime; опционально WebAssembly/TF.js для он-девайс режима
-- **Фронт**: React (progress-бары осей, heatmap, советы)
+- **Classifier**: Logistic Regression / Linear SVM on concat(embedding, sharpness, geometry), probability calibration
+- **API**: FastAPI/ONNX Runtime; optionally WebAssembly/TF.js for on-device mode
+- **Frontend**: React (axis progress bars, heatmap, tips)
 - **iOS**: SwiftUI
 
-## Приватность и этика
+## Privacy & Ethics
 
-- Не оценивает "красоту" и внешность — только техническое качество и мем-категории для развлечения
-- Фото не сохраняются по умолчанию; есть on-device режим
-- Встроенный abstain при низкой уверенности/плохих условиях (свет, сильная поза, окклюзии)
-- Валидация на разнообразных условиях съёмки; отчёт о фейрнес-метриках
+- Does not evaluate "beauty" or appearance — only technical quality and meme categories for entertainment
+- Photos are not saved by default; on-device mode available
+- Built-in abstain for low confidence/poor conditions (light, extreme pose, occlusions)
+- Validation on diverse shooting conditions; fairness metrics report
 
-## План развития
+## Development Roadmap
 
-- [ ] Heatmap резкости по зонам лица, советы по улучшению кадра
-- [ ] Active learning в UI (доразметка спорных кейсов)
-- [ ] Пакетная обработка папок и интеграции (TG/Discord-бот, Chrome-расширение)
-- [ ] Тюнинг порогов под конкретные камеры/соцсети
-- [ ] ML-классификатор с эмбеддингами (CLIP/ArcFace)
+- [ ] Sharpness heatmap by face zones, tips for improving frame
+- [ ] Active learning in UI (labeling controversial cases)
+- [ ] Batch folder processing and integrations (TG/Discord bot, Chrome extension)
+- [ ] Threshold tuning for specific cameras/social networks
+- [ ] ML classifier with embeddings (CLIP/ArcFace)
 
-## Лицензия
+## License
 
 MIT
 
-## Одно-предложение для тизера
+## One-sentence teaser
 
-"FaceSharp оценивает чёткость и ключевые оси портрета, объясняет, как улучшить кадр, и — ради фана — присваивает мем-лейбл 'mogged / sigma / meh'."
-
+"FaceSharp evaluates sharpness and key portrait axes, explains how to improve the frame, and — for fun — assigns a meme label 'god / mogged / sigma / average / meh / trash'."
