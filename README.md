@@ -66,6 +66,8 @@ npm install
 npm run dev
 ```
 
+**Важно**: Запускайте dev сервер из папки `frontend/`, а не из корня проекта!
+
 Frontend будет доступен на `http://localhost:3000`
 
 ### iOS App
