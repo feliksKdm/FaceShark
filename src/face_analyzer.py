@@ -18,6 +18,8 @@ class AnalysisResult:
     label: str
     confidence: float
     reasons: List[str]
+    tags: List[str]
+    quality: float
     abstain: bool
     model_version: str
     pose: Optional[Dict[str, float]] = None
@@ -46,6 +48,8 @@ class FaceAnalyzer:
                 label="meh",
                 confidence=0.0,
                 reasons=["не удалось загрузить изображение"],
+                tags=[],
+                quality=0.0,
                 abstain=True,
                 model_version=self.model_version
             )
@@ -64,6 +68,8 @@ class FaceAnalyzer:
                 label="meh",
                 confidence=0.0,
                 reasons=["лицо не обнаружено"],
+                tags=[],
+                quality=0.0,
                 abstain=True,
                 model_version=self.model_version
             )
@@ -79,6 +85,8 @@ class FaceAnalyzer:
                 label="meh",
                 confidence=0.0,
                 reasons=["не удалось извлечь область лица"],
+                tags=[],
+                quality=0.0,
                 abstain=True,
                 model_version=self.model_version
             )
@@ -99,10 +107,10 @@ class FaceAnalyzer:
         # Check if should abstain
         abstain = self._should_abstain(axes, landmarks.confidence, pose)
         
-        # Classify meme label
-        label, confidence, reasons = self.meme_classifier.classify(axes)
+        # Classify meme label (returns: label, confidence, reasons, tags, quality)
+        label, confidence, reasons, tags, quality_score = self.meme_classifier.classify(axes)
         
-        # Build reasons list
+        # Build reasons list (classifier already provides reasons, but we can add technical details)
         full_reasons = self._build_reasons(axes, quality, pose, proportions, reasons)
         
         # Convert pose and proportions to dicts for JSON serialization
@@ -115,6 +123,8 @@ class FaceAnalyzer:
             label=label,
             confidence=confidence,
             reasons=full_reasons,
+            tags=tags,
+            quality=quality_score,
             abstain=abstain,
             model_version=self.model_version,
             pose=pose_dict,

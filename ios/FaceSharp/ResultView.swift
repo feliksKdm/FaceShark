@@ -12,12 +12,18 @@ struct ResultView: View {
     
     var labelColor: Color {
         switch result.label?.lowercased() {
+        case "god":
+            return Color(red: 0.55, green: 0.36, blue: 0.96) // purple
         case "mogged":
             return .green
         case "sigma":
             return .blue
+        case "average":
+            return .yellow
         case "meh":
             return .orange
+        case "trash":
+            return .red
         default:
             return .gray
         }
@@ -25,15 +31,34 @@ struct ResultView: View {
     
     var labelText: String {
         switch result.label?.lowercased() {
+        case "god":
+            return "GOD"
         case "mogged":
             return "MOGGED"
         case "sigma":
             return "SIGMA"
+        case "average":
+            return "AVERAGE"
         case "meh":
             return "MEH"
+        case "trash":
+            return "TRASH"
         default:
             return result.label?.uppercased() ?? "UNKNOWN"
         }
+    }
+    
+    func getTagLabel(_ tag: String) -> String {
+        let tagLabels: [String: String] = [
+            "very_blurry": "Очень размыто",
+            "blurry": "Размыто",
+            "dark": "Темно",
+            "overexposed": "Переэкспонировано",
+            "bad_pose": "Плохая поза",
+            "weak_jaw": "Слабая челюсть",
+            "low_contrast": "Низкий контраст"
+        ]
+        return tagLabels[tag] ?? tag
     }
     
     var body: some View {
@@ -50,11 +75,35 @@ struct ResultView: View {
                 
                 Spacer()
                 
-                if let confidence = result.confidence {
-                    Text("Уверенность: \(Int(confidence * 100))%")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                VStack(alignment: .trailing, spacing: 4) {
+                    if let confidence = result.confidence {
+                        Text("Уверенность: \(Int(confidence * 100))%")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                    if let quality = result.quality {
+                        Text("Качество: \(String(format: "%.1f", quality))")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
                 }
+            }
+            
+            // Tags
+            if let tags = result.tags, !tags.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(tags, id: \.self) { tag in
+                            Text(getTagLabel(tag))
+                                .font(.caption)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .background(Color.gray.opacity(0.2))
+                                .cornerRadius(8)
+                        }
+                    }
+                }
+                .padding(.vertical, 8)
             }
             
             // Axes bars

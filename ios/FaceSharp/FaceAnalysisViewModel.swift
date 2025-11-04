@@ -81,11 +81,13 @@ struct AnalysisResult: Codable {
     let label: String?
     let confidence: Double?
     let reasons: [String]?
+    let tags: [String]?
+    let quality: Double?
     let abstain: Bool?
     let modelVersion: String?
     
     enum CodingKeys: String, CodingKey {
-        case ok, axes, label, confidence, reasons, abstain
+        case ok, axes, label, confidence, reasons, tags, quality, abstain
         case modelVersion = "model_version"
     }
 }

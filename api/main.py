@@ -63,6 +63,8 @@ async def analyze_image(file: UploadFile = File(...)):
         "label": "sigma",
         "confidence": 0.81,
         "reasons": [...],
+        "tags": ["blurry", "dark"],
+        "quality": 75.5,
         "abstain": false,
         "model_version": "1.0.0"
     }
@@ -86,6 +88,8 @@ async def analyze_image(file: UploadFile = File(...)):
             "label": result.label,
             "confidence": result.confidence,
             "reasons": result.reasons,
+            "tags": result.tags,
+            "quality": result.quality,
             "abstain": result.abstain,
             "model_version": result.model_version
         }
@@ -127,7 +131,9 @@ async def analyze_batch(files: list[UploadFile] = File(...)):
                 "ok": result.ok,
                 "axes": result.axes,
                 "label": result.label,
-                "confidence": result.confidence
+                "confidence": result.confidence,
+                "tags": result.tags,
+                "quality": result.quality
             })
         
         except Exception as e:

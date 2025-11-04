@@ -49,29 +49,54 @@ function App() {
   };
 
   const getLabelColor = (label) => {
-    switch (label) {
+    switch (label?.toLowerCase()) {
+      case 'god':
+        return '#8b5cf6'; // purple
       case 'mogged':
         return '#10b981'; // green
       case 'sigma':
         return '#3b82f6'; // blue
-      case 'meh':
+      case 'average':
         return '#f59e0b'; // amber
+      case 'meh':
+        return '#f97316'; // orange
+      case 'trash':
+        return '#ef4444'; // red
       default:
         return '#6b7280'; // gray
     }
   };
 
   const getLabelText = (label) => {
-    switch (label) {
+    switch (label?.toLowerCase()) {
+      case 'god':
+        return 'GOD';
       case 'mogged':
         return 'MOGGED';
       case 'sigma':
         return 'SIGMA';
+      case 'average':
+        return 'AVERAGE';
       case 'meh':
         return 'MEH';
+      case 'trash':
+        return 'TRASH';
       default:
-        return label.toUpperCase();
+        return label?.toUpperCase() || 'UNKNOWN';
     }
+  };
+
+  const getTagLabel = (tag) => {
+    const tagLabels = {
+      'very_blurry': 'Очень размыто',
+      'blurry': 'Размыто',
+      'dark': 'Темно',
+      'overexposed': 'Переэкспонировано',
+      'bad_pose': 'Плохая поза',
+      'weak_jaw': 'Слабая челюсть',
+      'low_contrast': 'Низкий контраст'
+    };
+    return tagLabels[tag] || tag;
   };
 
   const radarData = result?.axes ? [
@@ -134,10 +159,29 @@ function App() {
                 >
                   {getLabelText(result.label)}
                 </div>
-                <div className="confidence">
-                  Уверенность: {(result.confidence * 100).toFixed(0)}%
+                <div className="header-stats">
+                  <div className="confidence">
+                    Уверенность: {(result.confidence * 100).toFixed(0)}%
+                  </div>
+                  {result.quality !== undefined && (
+                    <div className="quality-score">
+                      Качество: {result.quality.toFixed(1)}
+                    </div>
+                  )}
                 </div>
               </div>
+
+              {result.tags && result.tags.length > 0 && (
+                <div className="tags-section">
+                  <div className="tags-container">
+                    {result.tags.map((tag, index) => (
+                      <span key={index} className="tag">
+                        {getTagLabel(tag)}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="radar-chart-container">
                 <ResponsiveContainer width="100%" height={300}>
